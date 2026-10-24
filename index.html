@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Home">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Home</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#000;color:#fff;height:100%;font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;-webkit-user-select:none;user-select:none}
+main{padding:calc(env(safe-area-inset-top) + 28px) 30px calc(env(safe-area-inset-bottom) + 30px);min-height:100%;display:flex;flex-direction:column}
+#time{font-size:64px;font-weight:200;letter-spacing:-.02em;line-height:1}
+#date{margin-top:8px;font-size:17px;color:#8e8e93}
+#wx{margin-top:4px;font-size:17px;color:#8e8e93;min-height:22px}
+nav{margin-top:auto;padding-top:40px;display:flex;flex-direction:column;gap:6px}
+nav a{color:#fff;text-decoration:none;font-size:34px;font-weight:300;letter-spacing:-.01em;padding:7px 0;transition:opacity .12s}
+nav a:active{opacity:.35}
+</style></head>
+<body><main>
+<div id="time">--:--</div>
+<div id="date"></div>
+<div id="wx"></div>
+<nav id="apps"></nav>
+</main>
+<script>
+// Edit this list to change the apps. Format: [label, url-scheme]
+const APPS = [
+  ["Phone",     "mobilephone://"],
+  ["Messages",  "sms:"],
+  ["WhatsApp",  "whatsapp://"],
+  ["Mail",      "message://"],
+  ["Calendar",  "calshow://"],
+  ["Revolut",   "revolut://"],
+  ["Music",     "music://"],
+  ["Maps",      "maps://"],
+  ["Notes",     "mobilenotes://"],
+  ["Instagram", "instagram://"],
+];
+const nav = document.getElementById("apps");
+for (const [label, url] of APPS) {
+  const a = document.createElement("a");
+  a.textContent = label; a.href = url;
+  nav.appendChild(a);
+}
+function tick() {
+  const d = new Date();
+  document.getElementById("time").textContent =
+    d.toLocaleTimeString("en-GB", {hour: "2-digit", minute: "2-digit"});
+  document.getElementById("date").textContent =
+    d.toLocaleDateString("en-GB", {weekday: "long", day: "numeric", month: "long"});
+}
+tick(); setInterval(tick, 5000);
+// Sheffield weather, no key (open-meteo). Fails quietly offline.
+const CODES = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Fog",51:"Drizzle",53:"Drizzle",55:"Drizzle",61:"Rain",63:"Rain",65:"Heavy rain",71:"Snow",73:"Snow",75:"Snow",80:"Showers",81:"Showers",82:"Heavy showers",95:"Thunderstorm"};
+fetch("https://api.open-meteo.com/v1/forecast?latitude=53.38&longitude=-1.47&current=temperature_2m,weather_code&timezone=Europe%2FLondon")
+  .then(r => r.json())
+  .then(j => { const c = j.current;
+    document.getElementById("wx").textContent =
+      `Sheffield · ${Math.round(c.temperature_2m)}° · ${CODES[c.weather_code] || ""}`; })
+  .catch(() => {});
+</script>
+</body></html>
